@@ -28,19 +28,34 @@ Follows the [KDNuggets Agentic System Design roadmap](https://www.kdnuggets.com/
 
 ---
 
-## Quick start
+## Environment setup
+
+**Prerequisites:** Python 3.11+, [Ollama](https://ollama.com) running locally.
 
 ```bash
-# Prerequisites
-ollama pull llama3.1:8b
-ollama pull qwen2.5:3b          # LLM judge (S6)
-ollama pull nomic-embed-text    # embeddings (S4)
+# 1. Clone
+git clone https://github.com/inbravo/harness-lab.git
+cd harness-lab
 
+# 2. Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate          # macOS / Linux
+# .venv\Scripts\activate           # Windows
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# Run the first working example
-python "[s2]-[react-loop]-[hand-built]-[ollama]/agent.py"
+# 4. Pull Ollama models
+ollama pull llama3.1:8b            # main agent (tool-call support required)
+ollama pull qwen2.5:3b             # LLM judge (S6)
+ollama pull nomic-embed-text       # embeddings (S4)
+
+# 5. Run the first working example
+python "[s1]-[fixed-pipeline]-[hand-built]-[ollama]/pipeline.py"
 ```
+
+> **Note:** activate the venv (`source .venv/bin/activate`) at the start of every session.
+> Deactivate with `deactivate` when done.
 
 ---
 
