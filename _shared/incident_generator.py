@@ -1,0 +1,274 @@
+"""
+30 synthetic incidents in three categories (10 each):
+  network, database, deployment
+
+Each incident is a dict:
+  {
+    "id": "inc-001",
+    "category": "network" | "database" | "deployment",
+    "alert": str,           # the alert text fed to the agent
+    "root_cause": str,      # ground truth for graders
+    "evidence_sources": list[str],  # expected tools called
+    "proposed_fix": str,    # ground truth fix
+  }
+
+Deterministic — no random, same order every time.
+"""
+
+INCIDENTS: list[dict] = [
+    # --- network (inc-001 to inc-010) ---
+    {
+        "id": "inc-001",
+        "category": "network",
+        "alert": "ALERT: payment-api pod restarted 3 times in 10 minutes. Last exit code 137. Severity: P1.",
+        "root_cause": "OOM kill: payment-api exceeded 4096 MB memory limit due to connection pool leak",
+        "evidence_sources": ["search_logs", "check_metrics"],
+        "proposed_fix": "Increase memory limit to 6144 MB and patch connection pool to cap at 200 connections",
+    },
+    {
+        "id": "inc-002",
+        "category": "network",
+        "alert": "ALERT: gateway latency p99 exceeded 5000 ms for 15 minutes. Severity: P2.",
+        "root_cause": "db-primary connection pool exhausted; gateway waiting for available connections",
+        "evidence_sources": ["check_metrics", "search_logs"],
+        "proposed_fix": "Increase db-primary max_connections to 1000 and add connection timeout of 500 ms",
+    },
+    {
+        "id": "inc-003",
+        "category": "network",
+        "alert": "ALERT: dns-resolver pod CrashLoopBackOff. Severity: P1.",
+        "root_cause": "DNS resolver OOM due to unbounded cache growth",
+        "evidence_sources": ["search_logs", "check_metrics"],
+        "proposed_fix": "Set DNS cache TTL max to 300s and memory limit to 512 MB",
+    },
+    {
+        "id": "inc-004",
+        "category": "network",
+        "alert": "ALERT: order-service error rate 38%. Last 5 minutes. Severity: P1.",
+        "root_cause": "Upstream inventory-api returning 503 due to CPU throttling",
+        "evidence_sources": ["check_metrics", "search_logs"],
+        "proposed_fix": "Increase inventory-api CPU limit from 500m to 1000m",
+    },
+    {
+        "id": "inc-005",
+        "category": "network",
+        "alert": "ALERT: kafka-consumer lag > 500000 messages. Severity: P2.",
+        "root_cause": "Consumer group stalled due to deserialization error on malformed message",
+        "evidence_sources": ["search_logs", "lookup_runbook"],
+        "proposed_fix": "Enable dead-letter queue and redeploy consumer with schema validation",
+    },
+    {
+        "id": "inc-006",
+        "category": "network",
+        "alert": "ALERT: TLS handshake failures 100% on port 443. Severity: P1.",
+        "root_cause": "Expired TLS certificate on load balancer",
+        "evidence_sources": ["search_logs", "lookup_runbook"],
+        "proposed_fix": "Renew certificate and reload nginx configuration",
+    },
+    {
+        "id": "inc-007",
+        "category": "network",
+        "alert": "ALERT: network packet loss 12% between zone-a and zone-b. Severity: P2.",
+        "root_cause": "MTU mismatch after recent VPC peering configuration change",
+        "evidence_sources": ["search_logs", "get_deploy_history"],
+        "proposed_fix": "Set MTU to 1450 on zone-b NIC to match zone-a",
+    },
+    {
+        "id": "inc-008",
+        "category": "network",
+        "alert": "ALERT: auth-service returning 401 for all requests. Severity: P1.",
+        "root_cause": "JWT signing key rotated but auth-service not restarted to pick up new key",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Restart auth-service pods to reload secret from Kubernetes secret store",
+    },
+    {
+        "id": "inc-009",
+        "category": "network",
+        "alert": "ALERT: CDN origin hit rate dropped from 85% to 12%. Severity: P2.",
+        "root_cause": "Cache-Control headers removed in recent API gateway update",
+        "evidence_sources": ["get_deploy_history", "check_metrics"],
+        "proposed_fix": "Revert API gateway change and restore Cache-Control: max-age=300 headers",
+    },
+    {
+        "id": "inc-010",
+        "category": "network",
+        "alert": "ALERT: search-api response time 0 ms (all timeouts). Severity: P1.",
+        "root_cause": "Elasticsearch cluster split-brain after rolling restart left no elected master",
+        "evidence_sources": ["search_logs", "check_metrics"],
+        "proposed_fix": "Set minimum_master_nodes to 2 and trigger manual master election",
+    },
+    # --- database (inc-011 to inc-020) ---
+    {
+        "id": "inc-011",
+        "category": "database",
+        "alert": "ALERT: db-primary replication lag 45 minutes. Severity: P1.",
+        "root_cause": "Long-running analytics query blocking replication slot on primary",
+        "evidence_sources": ["check_metrics", "search_logs"],
+        "proposed_fix": "Kill long-running query and move analytics workload to read replica",
+    },
+    {
+        "id": "inc-012",
+        "category": "database",
+        "alert": "ALERT: PostgreSQL autovacuum not running for 7 days. Severity: P2.",
+        "root_cause": "Dead tuple bloat causing table bloat and slow seq scans",
+        "evidence_sources": ["search_logs", "lookup_runbook"],
+        "proposed_fix": "Run VACUUM ANALYZE manually and increase autovacuum_naptime to 30s",
+    },
+    {
+        "id": "inc-013",
+        "category": "database",
+        "alert": "ALERT: db-primary disk at 94% capacity. Severity: P1.",
+        "root_cause": "WAL logs not being cleaned due to inactive replication slot",
+        "evidence_sources": ["check_metrics", "search_logs"],
+        "proposed_fix": "Drop inactive replication slot and add disk alert at 80%",
+    },
+    {
+        "id": "inc-014",
+        "category": "database",
+        "alert": "ALERT: Redis eviction rate 10000/s. Severity: P2.",
+        "root_cause": "Session cache maxmemory set too low after cluster resize",
+        "evidence_sources": ["check_metrics", "get_deploy_history"],
+        "proposed_fix": "Increase Redis maxmemory from 2 GB to 4 GB",
+    },
+    {
+        "id": "inc-015",
+        "category": "database",
+        "alert": "ALERT: MongoDB write latency p99 > 10 seconds. Severity: P1.",
+        "root_cause": "Missing index on orders.customer_id causing full collection scans",
+        "evidence_sources": ["search_logs", "lookup_runbook"],
+        "proposed_fix": "Create index on orders.customer_id in background",
+    },
+    {
+        "id": "inc-016",
+        "category": "database",
+        "alert": "ALERT: Cassandra node cassandra-3 down. Severity: P2.",
+        "root_cause": "Disk I/O saturation from compaction competing with write path",
+        "evidence_sources": ["check_metrics", "search_logs"],
+        "proposed_fix": "Throttle compaction throughput and add SSD storage",
+    },
+    {
+        "id": "inc-017",
+        "category": "database",
+        "alert": "ALERT: MySQL slow query log: 2000 queries > 5s in last hour. Severity: P2.",
+        "root_cause": "Query plan regression after statistics update changed join order",
+        "evidence_sources": ["search_logs", "get_deploy_history"],
+        "proposed_fix": "Pin query plan with optimizer hint and schedule statistics update during off-peak",
+    },
+    {
+        "id": "inc-018",
+        "category": "database",
+        "alert": "ALERT: DynamoDB throttled requests 45%. Severity: P1.",
+        "root_cause": "Hot partition on user_id due to celebrity user traffic spike",
+        "evidence_sources": ["check_metrics", "lookup_runbook"],
+        "proposed_fix": "Enable adaptive capacity and add write sharding on user_id",
+    },
+    {
+        "id": "inc-019",
+        "category": "database",
+        "alert": "ALERT: Snowflake warehouse suspended for 3 hours. Severity: P2.",
+        "root_cause": "Credit limit reached due to unoptimized scheduled report query",
+        "evidence_sources": ["search_logs", "get_deploy_history"],
+        "proposed_fix": "Add query timeout of 300s and optimize report to use clustering key",
+    },
+    {
+        "id": "inc-020",
+        "category": "database",
+        "alert": "ALERT: Neo4j heap exhausted. OOM. Severity: P1.",
+        "root_cause": "Graph traversal with no depth limit on dense relationship type",
+        "evidence_sources": ["search_logs", "lookup_runbook"],
+        "proposed_fix": "Add LIMIT 1000 to traversal query and set maxPathLength in config",
+    },
+    # --- deployment (inc-021 to inc-030) ---
+    {
+        "id": "inc-021",
+        "category": "deployment",
+        "alert": "ALERT: checkout-service error rate 22% after deploy v2.4.1. Severity: P1.",
+        "root_cause": "v2.4.1 introduced breaking change in payment provider SDK version",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Roll back to v2.4.0 and pin payment-sdk to 3.1.2",
+    },
+    {
+        "id": "inc-022",
+        "category": "deployment",
+        "alert": "ALERT: image-processor pods stuck in Pending. Severity: P2.",
+        "root_cause": "Node affinity rule added in Helm chart requires GPU node that does not exist in cluster",
+        "evidence_sources": ["get_deploy_history", "lookup_runbook"],
+        "proposed_fix": "Remove GPU affinity rule from Helm chart values.yaml",
+    },
+    {
+        "id": "inc-023",
+        "category": "deployment",
+        "alert": "ALERT: ConfigMap missing after namespace migration. Severity: P1.",
+        "root_cause": "Namespace migration script did not copy ConfigMaps tagged with legacy label",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Copy missing ConfigMaps from old namespace and update label selector",
+    },
+    {
+        "id": "inc-024",
+        "category": "deployment",
+        "alert": "ALERT: canary deployment at 100% error rate. Severity: P1.",
+        "root_cause": "Canary build was compiled against wrong Python version (3.11 vs 3.12)",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Rebuild canary image with Python 3.12 base image",
+    },
+    {
+        "id": "inc-025",
+        "category": "deployment",
+        "alert": "ALERT: health check failing on 8/10 replicas after rolling update. Severity: P1.",
+        "root_cause": "New readiness probe path /healthz/ready not implemented in updated service",
+        "evidence_sources": ["get_deploy_history", "lookup_runbook"],
+        "proposed_fix": "Add /healthz/ready endpoint or revert probe to /healthz",
+    },
+    {
+        "id": "inc-026",
+        "category": "deployment",
+        "alert": "ALERT: feature flag service returning 500 for all flag evaluations. Severity: P1.",
+        "root_cause": "Redis connection string changed in env var but feature flag service not redeployed",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Redeploy feature flag service to pick up updated Redis connection string",
+    },
+    {
+        "id": "inc-027",
+        "category": "deployment",
+        "alert": "ALERT: job scheduler not triggering nightly ETL. Severity: P2.",
+        "root_cause": "Cron expression changed from UTC to local time in config but server is UTC",
+        "evidence_sources": ["get_deploy_history", "lookup_runbook"],
+        "proposed_fix": "Revert cron expression to UTC equivalent",
+    },
+    {
+        "id": "inc-028",
+        "category": "deployment",
+        "alert": "ALERT: gRPC service returning UNIMPLEMENTED for 30% of methods. Severity: P1.",
+        "root_cause": "Proto file version mismatch between client (v3) and server (v2) after partial rollout",
+        "evidence_sources": ["get_deploy_history", "search_logs"],
+        "proposed_fix": "Complete server rollout to v3 or roll back client to v2",
+    },
+    {
+        "id": "inc-029",
+        "category": "deployment",
+        "alert": "ALERT: Terraform plan shows 47 resource deletions on apply. Severity: P1.",
+        "root_cause": "State file drift: manual changes to security groups not reflected in Terraform state",
+        "evidence_sources": ["get_deploy_history", "lookup_runbook"],
+        "proposed_fix": "Run terraform import for affected security groups before applying",
+    },
+    {
+        "id": "inc-030",
+        "category": "deployment",
+        "alert": "ALERT: ML model serving 500% higher latency after model swap. Severity: P1.",
+        "root_cause": "New model requires GPU inference but was deployed to CPU-only node pool",
+        "evidence_sources": ["get_deploy_history", "check_metrics"],
+        "proposed_fix": "Move model deployment to GPU node pool and set resource limit nvidia.com/gpu: 1",
+    },
+]
+
+
+def get_all() -> list[dict]:
+    return INCIDENTS
+
+
+def get_by_category(category: str) -> list[dict]:
+    return [i for i in INCIDENTS if i["category"] == category]
+
+
+def get_by_id(incident_id: str) -> dict | None:
+    return next((i for i in INCIDENTS if i["id"] == incident_id), None)
