@@ -18,13 +18,13 @@ Follows the [KDNuggets Agentic System Design roadmap](https://www.kdnuggets.com/
 
 | Step | Concept | Examples |
 |---|---|---|
-| S1 | Workflow vs. Agent | fixed-pipeline · dynamic-agent · decomposition |
-| S2 | Reason-Act-Observe loop | react-loop · failure-modes · loop-tracing |
-| S3 | Tool design + MCP | tool-design · mcp-server · mcp-client |
-| S4 | Memory | scratchpad · episodic-memory · semantic-memory |
-| S5 | Multi-agent | orchestrator-worker · parallel-workers · worker-briefs |
-| S6 | Evals | tool-grader · answer-grader · replay-suite |
-| S7 | Deployment guardrails | budget-enforcer · approval-gate · tracing · eval-gate |
+| S1 | Workflow vs. Agent | [fixed-pipeline]([s1]-[fixed-pipeline]-[hand-built]-[ollama]/) · [dynamic-agent]([s1]-[dynamic-agent]-[langgraph]-[ollama]/) · [decomposition]([s1]-[decomposition]-[hand-built]-[ollama]/) |
+| S2 | Reason-Act-Observe loop | [react-loop]([s2]-[react-loop]-[hand-built]-[ollama]/) · [failure-modes]([s2]-[failure-modes]-[hand-built]-[ollama]/) · [loop-tracing]([s2]-[loop-tracing]-[hand-built]-[ollama]/) |
+| S3 | Tool design + MCP | [tool-design]([s3]-[tool-design]-[hand-built]-[ollama]/) · [mcp-server]([s3]-[mcp-server]-[mcp-python]-[ollama]/) · [mcp-client]([s3]-[mcp-client]-[langgraph]-[ollama]/) |
+| S4 | Memory | [scratchpad]([s4]-[scratchpad]-[hand-built]-[ollama]/) · [episodic-memory]([s4]-[episodic-memory]-[sqlite]-[ollama]/) · [semantic-memory]([s4]-[semantic-memory]-[chromadb]-[ollama]/) |
+| S5 | Multi-agent | [orchestrator-worker]([s5]-[orchestrator-worker]-[langgraph]-[ollama]/) · [parallel-workers]([s5]-[parallel-workers]-[crewai]-[ollama]/) · [worker-briefs]([s5]-[worker-briefs]-[hand-built]-[ollama]/) |
+| S6 | Evals | [tool-grader]([s6]-[tool-grader]-[code]-[ollama]/) · [answer-grader]([s6]-[answer-grader]-[llm-judge]-[ollama]/) · [replay-suite]([s6]-[replay-suite]-[custom]-[ollama]/) |
+| S7 | Deployment guardrails | [budget-enforcer]([s7]-[budget-enforcer]-[hand-built]-[ollama]/) · [approval-gate]([s7]-[approval-gate]-[hand-built]-[ollama]/) · [tracing]([s7]-[tracing]-[jsonl]-[ollama]/) · [eval-gate]([s7]-[eval-gate]-[ci]-[ollama]/) |
 
 ---
 
