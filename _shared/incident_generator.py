@@ -1,8 +1,29 @@
-"""30 synthetic incidents (10 each: network, database, deployment). Deterministic, no random."""
-__author__ = "Amit Dixit"
+"""
+incident_generator.py — 30 synthetic incident records for the harness-lab domain project.
+
+Ten incidents each in three categories: network, database, deployment.
+All records are deterministic (no random) so every example produces the same
+grading baselines regardless of the run order or machine.
+
+Usage:
+    from _shared.incident_generator import get_all, get_by_category, get_by_id
+    incidents = get_all()
+    network   = get_by_category("network")
+    one       = get_by_id("inc-001")
+"""
+# ─────────────────────────────────────────────────────
+# Author   : Amit Dixit
+# GitHub   : https://github.com/inbravo
+# Web      : https://inbravo.github.io
+# LinkedIn : https://www.linkedin.com/in/inbravo/
+# ─────────────────────────────────────────────────────
+
+from __future__ import annotations
+
+# ── incident records ──────────────────────────────────
 
 INCIDENTS: list[dict] = [
-    # --- network (inc-001 to inc-010) ---
+    # ── network (inc-001 to inc-010) ──────────────────
     {
         "id": "inc-001",
         "category": "network",
@@ -83,7 +104,7 @@ INCIDENTS: list[dict] = [
         "evidence_sources": ["search_logs", "check_metrics"],
         "proposed_fix": "Set minimum_master_nodes to 2 and trigger manual master election",
     },
-    # --- database (inc-011 to inc-020) ---
+    # ── database (inc-011 to inc-020) ─────────────────
     {
         "id": "inc-011",
         "category": "database",
@@ -164,7 +185,7 @@ INCIDENTS: list[dict] = [
         "evidence_sources": ["search_logs", "lookup_runbook"],
         "proposed_fix": "Add LIMIT 1000 to traversal query and set maxPathLength in config",
     },
-    # --- deployment (inc-021 to inc-030) ---
+    # ── deployment (inc-021 to inc-030) ───────────────
     {
         "id": "inc-021",
         "category": "deployment",
@@ -248,13 +269,36 @@ INCIDENTS: list[dict] = [
 ]
 
 
+# ── public API ────────────────────────────────────────
+
 def get_all() -> list[dict]:
+    """Return all 30 incidents.
+
+    Returns:
+        List of all incident dicts.
+    """
     return INCIDENTS
 
 
 def get_by_category(category: str) -> list[dict]:
+    """Return incidents filtered by category.
+
+    Args:
+        category: One of "network", "database", or "deployment".
+
+    Returns:
+        Filtered list of incident dicts.
+    """
     return [i for i in INCIDENTS if i["category"] == category]
 
 
 def get_by_id(incident_id: str) -> dict | None:
+    """Return a single incident by its id, or None if not found.
+
+    Args:
+        incident_id: Incident identifier, e.g. "inc-001".
+
+    Returns:
+        Incident dict, or None.
+    """
     return next((i for i in INCIDENTS if i["id"] == incident_id), None)
