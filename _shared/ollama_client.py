@@ -1,11 +1,6 @@
-"""
-get_llm() — returns an OpenAI-compatible client pointed at a local Ollama instance.
+"""OpenAI-compatible client factory pointed at a local Ollama instance."""
+__author__ = "Amit Dixit"
 
-Usage:
-    from _shared.ollama_client import get_llm, DEFAULT_MODEL, JUDGE_MODEL
-    client = get_llm()
-    response = client.chat.completions.create(model=DEFAULT_MODEL, messages=[...])
-"""
 import os
 from openai import OpenAI
 

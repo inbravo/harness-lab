@@ -1,19 +1,6 @@
-"""
-S2 — Bare ReAct loop, no framework.
+"""S2 — bare ReAct loop, no framework: reason → act → observe until FINAL_ANSWER."""
+__author__ = "Amit Dixit"
 
-while not done:
-    reason  → LLM decides what to do next
-    act     → pick and call a tool
-    observe → append tool result to messages
-
-Domain: incident investigator (see _shared/incident_generator.py)
-Model:  llama3.1:8b via Ollama (tool-call support required)
-
-Usage:
-    python agent.py
-    python agent.py "ALERT: payment-api pod restarted 3 times. Exit code 137. Severity: P1."
-    TRACE=1 python agent.py      # emit JSONL trace to traces/
-"""
 import json
 import sys
 from pathlib import Path
@@ -28,7 +15,6 @@ from _shared.tracer import Tracer
 client = get_llm()
 tracer = Tracer("s2-react-loop")
 
-# --- Tool definitions (OpenAI function-calling schema) ---
 TOOLS = [
     {
         "type": "function",
@@ -80,7 +66,6 @@ TOOLS = [
     },
 ]
 
-# --- Synthetic tool execution ---
 def search_logs(keyword: str, limit: int = 10) -> list[dict]:
     store = {
         "OOM": [
@@ -139,7 +124,6 @@ TOOL_DISPATCH = {
     "check_metrics": lambda args: check_metrics(**args),
 }
 
-# --- System prompt ---
 SYSTEM = """\
 You are an incident investigator. When given an alert, use the available tools to gather evidence, \
 then identify the root cause and propose a fix.

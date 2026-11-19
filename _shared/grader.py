@@ -1,12 +1,6 @@
-"""
-Per-layer graders for incident investigator agent outputs.
+"""Per-layer graders: tool selection, argument schema, answer quality, trajectory (composite)."""
+__author__ = "Amit Dixit"
 
-Graders:
-  tool_selection_grader  — did the agent call the expected tools?
-  argument_grader        — are tool arguments valid JSON with required keys?
-  answer_grader          — does the final answer contain the root cause keywords?
-  trajectory_grader      — combine all three into a single pass/fail
-"""
 import json
 import re
 from typing import Any

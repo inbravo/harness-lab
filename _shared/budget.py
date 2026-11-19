@@ -1,20 +1,10 @@
-"""
-BudgetEnforcer — context manager that enforces step count, wall-clock time,
-and estimated token cost on any agent loop.
+"""BudgetEnforcer — context manager capping step count, wall-clock time, and estimated token cost."""
+__author__ = "Amit Dixit"
 
-Usage:
-    from _shared.budget import BudgetEnforcer, BudgetExceeded
-
-    with BudgetEnforcer(max_steps=25, max_seconds=300, max_cost_usd=0.50) as budget:
-        for step in range(100):
-            budget.tick(prompt_tokens=500, completion_tokens=200)
-            # ... call LLM ...
-"""
 import time
 from dataclasses import dataclass, field
 
-# Rough cost proxy for a local Ollama model (treat as $0 real cost but useful for
-# relative comparisons and porting to cloud models later).
+# Cost proxy — $0 real cost on Ollama, useful for relative comparisons and cloud porting.
 COST_PER_PROMPT_TOKEN = 0.000_003      # $3 / 1M tokens (GPT-4o equivalent proxy)
 COST_PER_COMPLETION_TOKEN = 0.000_015  # $15 / 1M tokens
 

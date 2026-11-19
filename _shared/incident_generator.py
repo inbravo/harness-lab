@@ -1,19 +1,5 @@
-"""
-30 synthetic incidents in three categories (10 each):
-  network, database, deployment
-
-Each incident is a dict:
-  {
-    "id": "inc-001",
-    "category": "network" | "database" | "deployment",
-    "alert": str,           # the alert text fed to the agent
-    "root_cause": str,      # ground truth for graders
-    "evidence_sources": list[str],  # expected tools called
-    "proposed_fix": str,    # ground truth fix
-  }
-
-Deterministic — no random, same order every time.
-"""
+"""30 synthetic incidents (10 each: network, database, deployment). Deterministic, no random."""
+__author__ = "Amit Dixit"
 
 INCIDENTS: list[dict] = [
     # --- network (inc-001 to inc-010) ---

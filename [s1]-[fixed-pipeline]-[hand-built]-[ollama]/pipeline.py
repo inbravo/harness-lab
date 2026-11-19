@@ -1,24 +1,6 @@
-"""
-S1 — Fixed Pipeline, no framework.
+"""S1 — five fixed LLM steps: classify → symptoms → runbook → draft → report. No branching, no tools."""
+__author__ = "Amit Dixit"
 
-Five LLM calls in a fixed sequence. No branching, no tool calls, no loops.
-Each step receives the previous step's output as context.
-
-Steps:
-  1. classify   — category, severity, affected service
-  2. symptoms   — specific symptoms, error code, time window
-  3. runbook    — relevant procedure for this incident type
-  4. draft      — root cause hypothesis + proposed fix
-  5. report     — final human-readable incident report
-
-Domain: incident investigator (same alerts as S2)
-Model:  llama3.1:8b via Ollama
-
-Usage:
-    python pipeline.py
-    python pipeline.py "ALERT: db-primary replication lag 45 minutes. Severity: P1."
-    TRACE=1 python pipeline.py
-"""
 import json
 import sys
 import time
@@ -33,7 +15,6 @@ from _shared.tracer import Tracer
 client = get_llm()
 tracer = Tracer("s1-fixed-pipeline")
 
-# --- JSON extraction helper ---
 def _parse_json(text: str) -> dict:
     """Extract the first JSON object from an LLM response."""
     text = text.strip()
@@ -72,7 +53,6 @@ def _call(step_name: str, system: str, user: str, budget: BudgetEnforcer) -> tup
         return result, pt, ct
 
 
-# --- Step definitions ---
 
 def step_classify(alert: str, budget: BudgetEnforcer) -> dict:
     system = "You are an incident classifier. Respond only with a JSON object, no explanation."
@@ -175,7 +155,6 @@ PROPOSED_FIX: <fix>"""
     return raw
 
 
-# --- Main pipeline ---
 
 def run(alert: str) -> dict:
     total_pt = total_ct = 0

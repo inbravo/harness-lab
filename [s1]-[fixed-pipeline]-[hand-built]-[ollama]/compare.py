@@ -1,20 +1,6 @@
-"""
-S1 — Side-by-side comparison: Fixed Pipeline vs. S2 ReAct Loop.
+"""S1 — side-by-side comparison of fixed pipeline vs. S2 ReAct loop: tokens, time, quality score."""
+__author__ = "Amit Dixit"
 
-Runs the same alert through both agents and prints a comparison table:
-  - LLM calls made
-  - Total tokens (prompt + completion)
-  - Elapsed time
-  - Quality score (keyword overlap with ground truth)
-  - Root cause identified
-
-Usage:
-    python compare.py
-    python compare.py "ALERT: db-primary replication lag 45 minutes. Severity: P1."
-
-For a full 30-incident comparison run:
-    python compare.py --all
-"""
 import sys
 import time
 from pathlib import Path
@@ -23,7 +9,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pipeline as s1
 
-# Import S2 agent from sibling folder
 s2_path = Path(__file__).parent.parent / "[s2]-[react-loop]-[hand-built]-[ollama]"
 sys.path.insert(0, str(s2_path))
 import agent as s2

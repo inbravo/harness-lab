@@ -1,18 +1,6 @@
-"""
-JSONL tracer. Emits one span per tool call or agent step.
+"""JSONL span tracer. Writes one line per step when TRACE=1. TRACE_DIR sets output folder."""
+__author__ = "Amit Dixit"
 
-Usage:
-    from _shared.tracer import Tracer
-    tracer = Tracer("traces/run-001.jsonl")  # only writes if TRACE=1
-    with tracer.span("react_step", parent_id=None) as span:
-        span.set("tool", "search_logs")
-        span.set("args", {"keyword": "OOM"})
-    # on exit, span writes the JSONL line
-
-Env:
-    TRACE=1   enable tracing (default: off)
-    TRACE_DIR traces output directory (default: traces/)
-"""
 import json
 import os
 import time
