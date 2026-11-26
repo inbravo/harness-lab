@@ -12,6 +12,54 @@ Runtime infrastructure for agentic systems — built progressively as a single p
 
 ---
 
+
+## Architecture Evolution
+
+```mermaid
+flowchart TD
+    A([P1 Alert]) --> S1
+
+    S1["S1 · Fixed Pipeline
+Sequential LLM calls, no branching"]
+    S1 --> S2
+
+    S2["S2 · ReAct Loop
+Reason → Act → Observe, iterative"]
+    S2 --> S3
+
+    S3["S3 · Tools + MCP
+Tool design, MCP server & client"]
+    S3 --> S4
+
+    S4["S4 · Memory
+Scratchpad · Episodic (SQLite) · Semantic (ChromaDB)"]
+    S4 --> S5
+
+    S5["S5 · Multi-Agent
+Orchestrator fans out to parallel workers"]
+    S5 --> S6
+
+    S6["S6 · Evals
+Code grader · LLM judge · Replay suite"]
+    S6 --> S7
+
+    S7["S7 · Guardrails
+Budget · Approval gate · JSONL tracing · CI eval gate"]
+    S7 --> Z
+
+    Z([Root-cause report + fix])
+
+    style A fill:#666666,stroke:#fff,color:#fff
+    style S1 fill:#4a7ab5,stroke:#fff,color:#fff
+    style S2 fill:#4a7ab5,stroke:#fff,color:#fff
+    style S3 fill:#2e8b6e,stroke:#fff,color:#fff
+    style S4 fill:#7a5ba8,stroke:#fff,color:#fff
+    style S5 fill:#4a7ab5,stroke:#fff,color:#fff
+    style S6 fill:#b54a4a,stroke:#fff,color:#fff
+    style S7 fill:#c48a1a,stroke:#fff,color:#fff
+    style Z fill:#666666,stroke:#fff,color:#fff
+```
+
 ## Learning path
 
 Follows the [KDNuggets Agentic System Design roadmap](https://www.kdnuggets.com/agentic-system-design-a-self-study-roadmap) (Bala Priya, 2026-11-16).

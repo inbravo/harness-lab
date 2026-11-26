@@ -9,6 +9,28 @@ while not done:
     observe → append tool result to messages as role=tool
 ```
 
+
+## Step Diagram
+
+```mermaid
+flowchart TD
+    A([P1 Alert]) --> B[Thought]
+    B --> C[Action / Tool Call]
+    C --> D[Observation]
+    D --> E{Done?}
+    E -- No --> B
+    E -- Yes --> F([Root-cause report])
+
+    style A fill:#666666,stroke:#fff,color:#fff
+    style B fill:#4a7ab5,stroke:#fff,color:#fff
+    style C fill:#2e8b6e,stroke:#fff,color:#fff
+    style D fill:#4a7ab5,stroke:#fff,color:#fff
+    style E fill:#c48a1a,stroke:#fff,color:#fff
+    style F fill:#666666,stroke:#fff,color:#fff
+```
+
+> Bare ReAct loop — no framework. Thought → Action → Observation repeats until the agent declares done.
+
 ## What it covers
 
 - OpenAI-compatible tool-calling against local Ollama

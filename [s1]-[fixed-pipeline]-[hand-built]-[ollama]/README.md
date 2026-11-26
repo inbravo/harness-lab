@@ -15,6 +15,67 @@ alert → classify → symptoms → runbook → draft → report
 | 4. draft | all above | `{root_cause, proposed_fix, escalation_needed, confidence}` |
 | 5. report | all above | `FINAL_ANSWER / EVIDENCE / PROPOSED_FIX` text |
 
+
+## Step Diagram
+
+```mermaid
+flowchart LR
+    A([P1 Alert]) --> B[Classify]
+    B --> C[Gather Evidence]
+    C --> D[Analyse]
+    D --> E[Propose Fix]
+    E --> F([Report])
+
+    style A fill:#666666,stroke:#fff,color:#fff
+    style B fill:#4a7ab5,stroke:#fff,color:#fff
+    style C fill:#4a7ab5,stroke:#fff,color:#fff
+    style D fill:#4a7ab5,stroke:#fff,color:#fff
+    style E fill:#4a7ab5,stroke:#fff,color:#fff
+    style F fill:#666666,stroke:#fff,color:#fff
+```
+
+> Five LLM calls in a fixed sequence. No branching, no loops — every alert takes the same path.
+
+## Files
+
+```mermaid
+flowchart TD
+    subgraph CMP["compare.py — benchmark harness"]
+        RC["run_comparison(alert, ground_truth)"]
+        PT["print_table() — tokens · elapsed · quality score"]
+        RA["run_all() — loops all 30 incidents"]
+        RC --> PT
+        RC -.-> RA
+    end
+
+    subgraph PL["pipeline.py — subject under test"]
+        RUN["run(alert)"]
+        C1["step_classify → category, severity, service"]
+        C2["step_symptoms → symptoms, error_code"]
+        C3["step_runbook → title, investigation steps"]
+        C4["step_draft → root_cause, proposed_fix"]
+        C5["step_report → FINAL_ANSWER"]
+        RUN --> C1 --> C2 --> C3 --> C4 --> C5
+    end
+
+    subgraph S2["agent.py · from s2 folder"]
+        REACT["run(alert) — ReAct loop"]
+    end
+
+    subgraph SH["_shared"]
+        SH1["get_llm()"]
+        SH2["BudgetEnforcer"]
+        SH3["Tracer"]
+        SH4["answer_grader"]
+        SH5["INCIDENTS"]
+    end
+
+    RC -->|"s1.run(alert)"| RUN
+    RC -->|"s2.run(alert)"| REACT
+    PL --> SH1 & SH2 & SH3
+    CMP --> SH4 & SH5
+```
+
 ## Run
 
 ```bash
